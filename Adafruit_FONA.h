@@ -159,6 +159,9 @@ class Adafruit_FONA : public FONAStreamType {
   boolean UDPconnected(void);
   boolean UDPsend(char *packet, uint8_t len);
 
+  // DNS
+  boolean DNSlookup(char *domain, char *ip);
+
   // HTTP low level interface (maps directly to SIM800 commands).
   boolean HTTP_init();
   boolean HTTP_term();

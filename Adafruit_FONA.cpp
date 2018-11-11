@@ -1544,6 +1544,13 @@ boolean Adafruit_FONA::UDPsend(char *packet, uint8_t len)
 }
 
 
+boolean Adafruit_FONA::DNSlookup(char *domain, char *ip) {
+
+
+
+    return true;
+}
+
 /********* HTTP LOW LEVEL FUNCTIONS  ************************************/
 
 boolean Adafruit_FONA::HTTP_init() {
