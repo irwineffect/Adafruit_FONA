@@ -1461,6 +1461,88 @@ uint16_t Adafruit_FONA::TCPread(uint8_t *buff, uint8_t len) {
 }
 
 
+/********* UDP FUNCTIONS  ************************************/
+
+boolean Adafruit_FONA::UDPconnect(char *server, uint16_t port)
+{
+  flushInput();
+
+  // close all old connections
+  if (! sendCheckReply(F("AT+CIPSHUT"), F("SHUT OK"), 20000) ) return false;
+
+  // single connection at a time
+  if (! sendCheckReply(F("AT+CIPMUX=0"), ok_reply) ) return false;
+
+  // manually read data
+  if (! sendCheckReply(F("AT+CIPRXGET=1"), ok_reply) ) return false;
+
+  DEBUG_PRINT(F("AT+CIPSTART=\"UDP\",\""));
+  DEBUG_PRINT(server);
+  DEBUG_PRINT(F("\",\""));
+  DEBUG_PRINT(port);
+  DEBUG_PRINTLN(F("\""));
+
+
+  mySerial->print(F("AT+CIPSTART=\"UDP\",\""));
+  mySerial->print(server);
+  mySerial->print(F("\",\""));
+  mySerial->print(port);
+  mySerial->println(F("\""));
+
+  if (! expectReply(ok_reply)) return false;
+  if (! expectReply(F("CONNECT OK"))) return false;
+
+  // looks like it was a success (?)
+  return true;
+
+}
+
+boolean Adafruit_FONA::UDPclose(void)
+{
+  return sendCheckReply(F("AT+CIPCLOSE"), ok_reply);
+}
+
+boolean Adafruit_FONA::UDPconnected(void)
+{
+  if (! sendCheckReply(F("AT+CIPSTATUS"), ok_reply, 100) ) return false;
+  readline(100);
+
+  DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
+
+  return (strcmp(replybuffer, "STATE: CONNECT OK") == 0);
+}
+
+boolean Adafruit_FONA::UDPsend(char *packet, uint8_t len)
+{
+  DEBUG_PRINT(F("AT+CIPSEND="));
+  DEBUG_PRINTLN(len);
+#ifdef ADAFRUIT_FONA_DEBUG
+  for (uint16_t i=0; i<len; i++) {
+  DEBUG_PRINT(F(" 0x"));
+  DEBUG_PRINT(packet[i], HEX);
+  }
+#endif
+  DEBUG_PRINTLN();
+
+
+  mySerial->print(F("AT+CIPSEND="));
+  mySerial->println(len);
+  readline();
+
+  DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
+
+  if (replybuffer[0] != '>') return false;
+
+  mySerial->write(packet, len);
+  readline(3000); // wait up to 3 seconds to send the data
+
+  DEBUG_PRINT (F("\t<--- ")); DEBUG_PRINTLN(replybuffer);
+
+
+  return (strcmp(replybuffer, "SEND OK") == 0);
+
+}
+
 
 /********* HTTP LOW LEVEL FUNCTIONS  ************************************/
 
