@@ -145,6 +145,9 @@ class Adafruit_FONA : public FONAStreamType {
   boolean getGPS(float *lat, float *lon, float *speed_kph=0, float *heading=0, float *altitude=0, time_t *time=0);
   boolean enableGPSNMEA(uint8_t nmea);
 
+  // DNS
+  boolean DNSquery(const char *hostname, char *const ip);
+
   // TCP raw connections
   boolean TCPconnect(char *server, uint16_t port);
   boolean TCPclose(void);

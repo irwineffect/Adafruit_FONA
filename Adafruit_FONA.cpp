@@ -1419,6 +1419,46 @@ boolean Adafruit_FONA::getGSMLoc(float *lat, float *lon) {
   return true;
 
 }
+/********* DNS FUNCTIONS  ************************************/
+boolean Adafruit_FONA::DNSquery(const char *hostname, char *const ip)
+{
+  DEBUG_PRINTLN(F("AT+CIFSR"));
+  flushInput();
+  DEBUG_PRINT(F("AT+CDNSGIP="));
+  DEBUG_PRINTLN(hostname);
+  mySerial->print(F("AT+CDNSGIP="));
+  mySerial->println(hostname);
+  if (! expectReply(ok_reply) ) return false;
+
+//uint8_t Adafruit_FONA::readline(uint16_t timeout, boolean multiline) {
+  readline(2000, false);
+
+
+  DEBUG_PRINTLN(replybuffer);
+  //0         1         2         3
+  //0123456789012345678901234567890123456789
+  //+CDNSGIP: 1,"home.jirwin.org","76.178.20.191"
+  if ((replybuffer[10] - '0') != 1) return false;
+
+  char *ptr = &replybuffer[12];
+  while (*ptr != ',')
+  {
+      ++ptr;
+      if (*ptr == '\0') return false;
+  }
+  ptr += 2;
+
+  char * endptr = ptr;
+  while (*endptr != '\0' && *endptr != '\"')
+  {
+      ++endptr;
+  }
+  *endptr = '\0';
+
+  strcpy(ip, ptr);
+  return true;
+}
+
 /********* TCP FUNCTIONS  ************************************/
 
 
