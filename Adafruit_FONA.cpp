@@ -29,6 +29,70 @@
 #endif
 
 
+//timestring should be in the form of YYYYMMDDhhmmss.sss
+time_t convert_gps_time(char * timestr)
+{
+    struct tm time;
+
+    // tempoarary variable used to build time values;
+    uint16_t t;
+
+    // build year
+    t = 0;
+    t += static_cast<uint16_t>(*timestr - '0') * 1000;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0') * 100;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0') * 10;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0');
+    ++timestr;
+    time.tm_year = t - 1900;
+
+    //build month
+    t = 0;
+    t += static_cast<uint16_t>(*timestr - '0') * 10;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0');
+    ++timestr;
+    time.tm_mon = t - 1;
+
+    // build day
+    t = 0;
+    t += static_cast<uint16_t>(*timestr - '0') * 10;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0');
+    ++timestr;
+    time.tm_mday = t;
+
+
+    // build hour
+    t = 0;
+    t += static_cast<uint16_t>(*timestr - '0') * 10;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0');
+    ++timestr;
+    time.tm_hour = t;
+
+    // build minute
+    t = 0;
+    t += static_cast<uint16_t>(*timestr - '0') * 10;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0');
+    ++timestr;
+    time.tm_min = t;
+
+    // build second
+    t = 0;
+    t += static_cast<uint16_t>(*timestr - '0') * 10;
+    ++timestr;
+    t += static_cast<uint16_t>(*timestr - '0');
+    ++timestr;
+    time.tm_sec = t;
+
+    return mktime(&time);
+}
+
 Adafruit_FONA::Adafruit_FONA(int8_t rst)
 {
   _rstpin = rst;
@@ -851,7 +915,7 @@ uint8_t Adafruit_FONA::getGPS(uint8_t arg, char *buffer, uint8_t maxbuff) {
   return len;
 }
 
-boolean Adafruit_FONA::getGPS(float *lat, float *lon, float *speed_kph, float *heading, float *altitude) {
+boolean Adafruit_FONA::getGPS(float *lat, float *lon, float *speed_kph, float *heading, float *altitude, time_t *time) {
 
   char gpsbuffer[120];
 
@@ -956,9 +1020,14 @@ boolean Adafruit_FONA::getGPS(float *lat, float *lon, float *speed_kph, float *h
     tok = strtok(NULL, ",");
     if (! tok) return false;
 
-    // skip date
-    tok = strtok(NULL, ",");
-    if (! tok) return false;
+    // grab date
+    char* timestr = strtok(NULL, ",");
+    if (! timestr) return false;
+
+    if  (time != NULL)
+    {
+        *time = convert_gps_time(timestr);
+    }
 
     // grab the latitude
     char *latp = strtok(NULL, ",");
@@ -1006,9 +1075,14 @@ boolean Adafruit_FONA::getGPS(float *lat, float *lon, float *speed_kph, float *h
     char *tok = strtok(gpsbuffer, ",");
     if (! tok) return false;
 
-    // skip date
-    tok = strtok(NULL, ",");
-    if (! tok) return false;
+    // grab date
+    char* timestr = strtok(NULL, ",");
+    if (! timestr) return false;
+
+    if  (time != NULL)
+    {
+        *time = convert_gps_time(timestr);
+    }
 
     // skip fix
     tok = strtok(NULL, ",");

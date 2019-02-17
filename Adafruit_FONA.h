@@ -21,7 +21,7 @@
 #include "includes/FONAExtIncludes.h"
 #include "includes/platform/FONAPlatform.h"
 
-
+#include <time.h>
 
 #define FONA800L 1
 #define FONA800H 6
@@ -142,7 +142,7 @@ class Adafruit_FONA : public FONAStreamType {
   boolean enableGPS(boolean onoff);
   int8_t GPSstatus(void);
   uint8_t getGPS(uint8_t arg, char *buffer, uint8_t maxbuff);
-  boolean getGPS(float *lat, float *lon, float *speed_kph=0, float *heading=0, float *altitude=0);
+  boolean getGPS(float *lat, float *lon, float *speed_kph=0, float *heading=0, float *altitude=0, time_t *time=0);
   boolean enableGPSNMEA(uint8_t nmea);
 
   // TCP raw connections
